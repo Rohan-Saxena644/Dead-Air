@@ -108,6 +108,8 @@ describe("at-least-once delivery", () => {
     expect(recovered().discovered).toContain("shutdown");
   });
   it("terminal accepts only fictional documented syntax", () => {
+    expect(parseCommand("trace inspect TRC-0001")).toBe("trace:TRC-0001");
+    expect(() => run(["trace:TRC-9999"])).toThrow();
     expect(parseCommand(" relay ACK-route repair ")).toBe("repair");
     expect(parseCommand("message inspect MSG-0917")).toBe("message");
     expect(parseCommand("rm -rf /")).toBeNull();

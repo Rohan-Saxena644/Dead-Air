@@ -27,6 +27,7 @@ export type Action =
   | "advance"
   | "preserve"
   | "silence"
+  | `trace:${string}`
   | `read:${EvidenceId}`
   | `pin:${EvidenceId}`;
 export interface Attempt {
@@ -141,6 +142,21 @@ function deliver(s: GameState) {
       id,
     );
 }
+function observeTrace(s: GameState, id?: string) {
+  const attempt = id
+    ? s.queue.attempts.find((a) => a.id === id)
+    : s.queue.attempts.at(-1);
+  if (!attempt)
+    throw new Error("Trace not found. Use an ID from the delivery history.");
+  discover(s, "delivery", "ack", "runbook");
+  emit(
+    s,
+    "RELAY",
+    attempt.acknowledged ? "info" : "warn",
+    `Trace ${attempt.id}: ${attempt.reused ? "existing commit reused" : "VAULT commit"} → ${attempt.acknowledged ? "/v2/ack confirmed" : "retired /v1/receipt timed out"}. Runbook available.`,
+    attempt.id,
+  );
+}
 export function initialState(): GameState {
   const s: GameState = {
     schemaVersion: 1,
@@ -211,6 +227,7 @@ export function legalActions(s: GameState): Action[] {
     "queue",
     "message",
     "trace",
+    ...s.queue.attempts.map((a) => `trace:${a.id}` as Action),
     "restart",
     s.paused ? "resume" : "pause",
     ...(!s.idempotency ? ["idempotency" as const] : []),
@@ -295,13 +312,7 @@ export function transition(
         );
         break;
       case "trace":
-        discover(s, "delivery", "ack", "runbook");
-        emit(
-          s,
-          "RELAY",
-          "warn",
-          "Trace: VAULT commit → retired ACK endpoint /v1/receipt → timeout. Runbook recovered.",
-        );
+        observeTrace(s);
         break;
       case "restart":
         emit(
@@ -386,6 +397,7 @@ export function transition(
         );
         break;
       default:
+        if (action.startsWith("trace:")) observeTrace(s, action.slice(6));
         if (action.startsWith("read:")) {
           const id = action.slice(5) as EvidenceId;
           if (id === "manifest") {
@@ -433,6 +445,7 @@ export function parseCommand(input: string): Action | "help" | null {
     "archive inspect": "archive",
   };
   if (c === `message inspect ${MESSAGE_ID.toLowerCase()}`) return "message";
-  if (/^trace inspect trc-\d{4}$/.test(c)) return "trace";
+  if (/^trace inspect trc-\d{4}$/.test(c))
+    return `trace:${c.split(" ")[2].toUpperCase()}`;
   return commands[c] ?? null;
 }
