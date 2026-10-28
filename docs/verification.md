@@ -1,4 +1,4 @@
-# Verification — 2026-10-27
+# Verification — 2026-10-28
 
 Executed locally on Windows with Node.js 22.16.0 and the committed npm dependency graph.
 
@@ -6,14 +6,16 @@ Executed locally on Windows with Node.js 22.16.0 and the committed npm dependenc
 | --- | --- |
 | `npm run typecheck` | Passed, strict TypeScript |
 | `npm run lint` | Passed with no lint warnings or errors |
-| `npm test` | 20 tests passed in two suites |
-| `npm run test:e2e` | Seven Chromium tests passed |
+| `npm test` | 27 tests passed in three suites |
+| `npm run test:e2e` | Nine Chromium tests passed |
 | `npm run build` | Optimized Next.js build and standalone asset/migration packaging passed |
-| `npm start` | Packaged standalone server started successfully on a separate local port |
-| Production health/session/actions/export/static asset smoke | HTTP 200, saved pause restored, duplicate action UUID did not reapply, undiscovered documents omitted from export, bundled JS served |
+| `npm start` | Previously passed on 2026-10-27; packaged standalone server started on a separate local port |
+| Production health/session/actions/export/static asset smoke | Previously passed on 2026-10-27: HTTP 200, saved pause restored, duplicate action UUID did not reapply, undiscovered documents omitted from export, bundled JS served |
 | `git diff --check` | Passed |
 
 ## Browser coverage
+
+The 2026-10-28 feature checks add the guided incident notebook and operational consequence reports. Desktop and mobile playthroughs verify discovery-gated instructions, recovery through notebook action buttons, restoring a partly completed checklist after reload, and an acknowledged retry that adds zero archive records. Reopening the notebook resets its scroll position. The objective and shortcut were visually checked at 390px width after correcting a narrow text layout. New captures: `notebook-desktop.png`, `notebook-mobile.png`, and `recovery-feedback-*.png`.
 
 - Preserve ending reached; reload restored both mid-investigation and completed progress.
 - Silence ending reached without a worker restart; export offered before confirmation.
@@ -28,7 +30,7 @@ Executed locally on Windows with Node.js 22.16.0 and the committed npm dependenc
 
 Actual screenshots were captured and visually inspected at 1440px desktop, 1366 × 768 laptop, and 390 × 844 mobile widths, including both final scenes. Inspection caught and corrected a panel overflow and an opening-menu stacking problem. The shell now starts collapsed and the laptop topology compacts on short screens. See `screenshots/`; the ending images contain spoilers.
 
-The seven browser tests use Playwright's installed Chromium. Tests do not make real inference calls. Provider fixtures cover malformed JSON, provider failure, discovery-gated tools, invalid citations/actions, and bounded tool rounds. The pure engine tests cover commit-before-ACK, duplicate retries, both restart modes, idempotency, acknowledgement repair, retained history, prerequisites, and recovery without a restart mistake. SQLite tests cover persistence, action UUID deduplication, and stale version rejection.
+The nine browser tests use Playwright's installed Chromium. Tests do not make real inference calls. Provider fixtures cover malformed JSON, provider failure, discovery-gated tools, invalid citations/actions, and bounded tool rounds. The pure engine tests cover commit-before-ACK, duplicate retries, both restart modes, idempotency, acknowledgement repair, retained history, prerequisites, and recovery without a restart mistake. SQLite tests cover persistence, action UUID deduplication, and stale version rejection. Notebook tests cover source-gated instructions, a complete legal route, repair-first recovery, restoring derived progress, and accurate operational deltas.
 
 ## Verification limits
 

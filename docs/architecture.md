@@ -10,6 +10,7 @@ The browser renders a public projection. Route handlers load canonical SQLite st
 - `lib/db/store.ts`: better-sqlite3, WAL, versioned SQL migrations, transactional state changes, action/event audit, conversation, invocation metadata. One transaction checks the action UUID, then the expected version, then applies the action and persists it.
 - `lib/ai/operator.ts`: small provider interface, server-side fetch, bounded JSON protocol, schema/citation/legal-action validation, single repair attempt, scripted fallback. No simulator mutation authority.
 - `components/game`: separate topology, evidence workspace, terminal, operator notebook, ambience/comfort, opening and final scenes.
+- `lib/game/notebook.ts`: pure, evidence-aware investigation plan and before/after operational reports. Checklist completion is derived from saved canonical state, including out-of-order recovery; it has no independent mutable progress or unlock authority. The React notebook and action-result components render that projection. A proposed next action still passes through the same server-validated action route as the terminal and controls. The full recovery procedure appears after the runbook is read (or after the player has independently resolved the incident). Reports describe the submitted operation; routine inspection and automatic ticks do not create new banners.
 
 ## Recovery
 

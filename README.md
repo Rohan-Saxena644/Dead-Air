@@ -6,6 +6,8 @@
 
 The industrial console uses local CSS, system fonts, SVG/Lucide icons, optional Web Audio ambience, reduced-motion support, and mobile panel navigation. There is no countdown. All commands are parsed fictional actions; no shell, real service, or user file is controlled by the terminal.
 
+For a first playthrough, use **Open incident notebook** beside the current objective. Its investigation plan reveals the recovery checklist after you read the recovered runbook, tracks the actual machine state, and offers a legal next action. Completed steps restore from your save. Operational reports show whether your last control changed attempts, added archive records, or drained the queue; repairing a route alone is never reported as a completed delivery.
+
 ![The DEAD AIR investigation console, captured from the running application](docs/screenshots/console-desktop.png)
 
 ## Run locally
