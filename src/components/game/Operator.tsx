@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, ArrowUpRight, Pin, Sparkles, BookOpen } from "lucide-react";
+import { ArrowUp, ArrowUpRight, Sparkles, BookOpen } from "lucide-react";
 import type { PublicState, Conversation } from "@/lib/server/projection";
 import type { Action, EvidenceId } from "@/lib/game/engine";
 import { labels, effects } from "./labels";
+import { IncidentNotebook } from "./IncidentNotebook";
 export function Operator({
   s,
   conversation,
@@ -11,6 +12,11 @@ export function Operator({
   ask,
   act,
   openEvidence,
+  notebook,
+  setNotebook,
+  busy,
+  notebookAction,
+  notebookRevision,
 }: {
   s: PublicState;
   conversation: Conversation[];
@@ -19,9 +25,13 @@ export function Operator({
   ask: (q: string) => void;
   act: (a: Action) => void;
   openEvidence: (id: EvidenceId) => void;
+  notebook: boolean;
+  setNotebook: (open: boolean) => void;
+  busy: boolean;
+  notebookAction: (action: Action) => void;
+  notebookRevision: number;
 }) {
   const [question, setQuestion] = useState("");
-  const [notebook, setNotebook] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => {
     end.current?.scrollIntoView({ block: "nearest", behavior: "instant" });
@@ -63,42 +73,13 @@ export function Operator({
         </button>
       </div>
       {notebook ? (
-        <div className="notebook">
-          <span className="micro-label green">CONFIRMED OBSERVATIONS</span>
-          <p>
-            The company dissolved in 2019. A preserved message is being retried.
-          </p>
-          {s.discovered.includes("ack") && (
-            <p>VAULT commits before the acknowledgement fails.</p>
-          )}
-          {s.milestones.includes("truth") && (
-            <p>The voice is a 2017 recording. MORA is an automated operator.</p>
-          )}
-          <span className="micro-label amber">WORKING INTERPRETATION</span>
-          <p>
-            {s.milestones.includes("truth")
-              ? "An unfinished preservation request kept the machine waiting."
-              : "A current delivery attempt may be replaying something much older."}
-          </p>
-          <span className="micro-label">PINNED EVIDENCE</span>
-          {s.pinned.length === 0 ? (
-            <p className="muted">Open a document and pin it here.</p>
-          ) : (
-            s.pinned.map((id) => (
-              <button
-                className="evidence-row"
-                key={id}
-                onClick={() => openEvidence(id)}
-              >
-                <Pin size={14} />
-                {s.evidence.find((e) => e.id === id)?.title}
-                <ArrowUpRight size={13} />
-              </button>
-            ))
-          )}
-          <span className="micro-label green">CURRENT OBJECTIVE</span>
-          <p>{s.objective}</p>
-        </div>
+        <IncidentNotebook
+          key={notebookRevision}
+          s={s}
+          busy={busy}
+          act={notebookAction}
+          openEvidence={openEvidence}
+        />
       ) : (
         <>
           <div className="conversation" aria-live="polite">

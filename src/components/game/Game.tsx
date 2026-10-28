@@ -12,6 +12,7 @@ import {
   Shield,
   Power,
   ChevronRight,
+  BookOpen,
 } from "lucide-react";
 import type { PublicState, Conversation } from "@/lib/server/projection";
 import {
@@ -26,6 +27,8 @@ import { Investigation, type Tab } from "./Investigation";
 import { Operator } from "./Operator";
 import { Terminal } from "./Terminal";
 import { labels } from "./labels";
+import { actionReport, type ActionReport } from "@/lib/game/notebook";
+import { ActionFeedback } from "./ActionFeedback";
 export function Game() {
   const [state, setState] = useState<PublicState | null>(null);
   const [conversation, setConversation] = useState<Conversation[]>([]);
@@ -43,6 +46,9 @@ export function Game() {
   const [retryQuestion, setRetryQuestion] = useState("");
   const [confirmation, setConfirmation] = useState<Ending | null>(null);
   const [mobile, setMobile] = useState("investigate");
+  const [notebook, setNotebook] = useState(false);
+  const [notebookRevision, setNotebookRevision] = useState(0);
+  const [report, setReport] = useState<ActionReport | null>(null);
   const sessionEpoch = useRef(0);
   const stateRef = useRef(state);
   useEffect(() => {
@@ -82,6 +88,8 @@ export function Game() {
       setSelected(null);
       setConfirmation(null);
       setMobile("investigate");
+      setNotebook(false);
+      setReport(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start session.");
     } finally {
@@ -111,6 +119,8 @@ export function Game() {
         setState(d.state);
       }
       if (!r.ok) throw new Error(d.error);
+      const result = actionReport(current, d.state, action);
+      if (result) setReport(result);
       if (action.startsWith("read:"))
         setSelected(action.slice(5) as EvidenceId);
       if (action === "archive") setTab("archive");
@@ -228,6 +238,19 @@ export function Game() {
     setMobile("investigate");
     if (!state?.ending) void act(`read:${id}`);
     else setSelected(id);
+  }
+  function notebookAction(action: Action) {
+    if (
+      ["queue", "trace", "archive"].includes(action) ||
+      action.startsWith("read:")
+    )
+      setMobile("investigate");
+    void act(action);
+  }
+  function openNotebook() {
+    setNotebook(true);
+    setMobile("operator");
+    setNotebookRevision((value) => value + 1);
   }
   if (!entered)
     return (
@@ -471,8 +494,15 @@ export function Game() {
           <span className="micro-label">CURRENT OBJECTIVE</span>
           <p>{state.objective}</p>
         </div>
+        <button className="notebook-shortcut" onClick={openNotebook}>
+          <BookOpen size={14} />
+          Open incident notebook
+        </button>
         <span className="tiny">AUTO-SAVED · V{state.version}</span>
       </div>
+      {report && (
+        <ActionFeedback report={report} dismiss={() => setReport(null)} />
+      )}
       <nav className="mobile-navigation" aria-label="Console views">
         {[
           ["systems", "Systems"],
@@ -508,6 +538,11 @@ export function Game() {
           ask={(q) => void ask(q)}
           act={(a) => void act(a)}
           openEvidence={openEvidence}
+          notebook={notebook}
+          setNotebook={setNotebook}
+          busy={busy}
+          notebookAction={notebookAction}
+          notebookRevision={notebookRevision}
         />
       </div>
       {state.endingReady && (
