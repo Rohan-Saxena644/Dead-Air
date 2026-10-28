@@ -2,13 +2,23 @@
 
 ## Actual status
 
-OpenRouter and Ollama HTTP adapters, a validated structured tool protocol, and scripted fallback are implemented. Official model catalog IDs checked: `google/gemma-3-27b-it` and `gemma3:4b`. Model availability is not evidence that inference succeeded. No credentials or running local model were supplied; **no live model behavior, latency, cost, quality, or local hardware compatibility is verified**. No invented usage counts or agent traces are presented.
+Google AI Studio is the sole live provider. A real key listed `gemma-4-26b-a4b-it` and `gemma-4-31b-it`; the default `gemma-4-26b-a4b-it` completed four live operator evaluations and one browser/session conversation on 2026-10-29 (Asia/Calcutta). The sanitized evidence files retain UTC timestamps. The older hosted and local adapters have been removed.
 
-Automated fixtures exercise malformed output with one repair, provider HTTP failure, discovered-evidence tools, illegal action rejection, undiscovered citations, and tool budgets. Browser coverage exercises both endings, persistence, keyboard terminal use, mobile navigation, and an unavailable-operator fixture. These are fixture-based checks, not live inference evaluations. Final execution results are recorded in `docs/verification.md`.
+The four operator checks covered a native evidence-tool round trip, initial uncertainty, duplicate delivery diagnosis, and interpreting the discovered archive. All returned schema-valid answers, discovered citations, and legal suggestions without scripted fallback. The browser check verified the actual Google mode, persisted conversation, invocation metadata, unchanged queue/archive records during inference, and responsive operational controls. Real returned token usage and model versions are in [the operator sample](evaluations/google-2026-10-29.json) and [the browser sample](evaluations/google-browser-2026-10-29.json). These are small verification samples, not performance or quality benchmarks. No costs or external trace spans were inferred.
+
+Manual review of these five replies found no hidden employee/transcript spoilers in the opening, a correct commit-before-ACK explanation in the diagnostic answers, and an evidence-supported revision after the manifest. This review covers these responses only. The native-tool evaluation verified a real `read_discovered_evidence(shutdown)` call and function-result round trip before the final answer. Discovery-denied calls and call ID/signature preservation are covered by deterministic fixtures. The orchestration layer still validates native calls against the existing read-tool schemas and budgets.
+
+Automated fixtures cover Google request roles and header authentication, missing/invalid configuration, rate limits and HTTP errors, timeouts, blocked/truncated/oversized/malformed responses, exclusion of thought text, actual usage aggregation over tool rounds, discovery gates, illegal suggestions, and schema repair. Ordinary browser tests explicitly force scripted mode and isolate their database on port 3100, regardless of a developer's local key. Final execution results are recorded in `verification.md`.
+
+The final packaged production server also completed a live Google reply and persisted it. Its [smoke report](evaluations/google-production-2026-10-29.json) records the actual invocation, HttpOnly session cookie check, idempotent action submission, stale-version rejection, discovered-only export, disabled debug route, and seven static JavaScript assets checked for accidental key exposure.
+
+## Explicit live checks
+
+Run `npm run test:ai:live` for the four model evaluations or `npm run test:ai:browser` for the real browser/session path. These commands use the local Google key and consume project quota; they are separate from normal fixture tests. The browser command owns an isolated development server on port 3200. Stop any other Next development server in this checkout first. Both commands save sanitized fictional outputs and metadata under ignored `data/google-live-*.json`. No full inference prompts, private reasoning text, or keys are written.
 
 ## Manual live-provider checklist
 
-Run separately with each configured model and record actual mode, state version, response, citations, and invocation metadata. Enable `DEV_DEMO_DEBUG=true` and inspect `/api/debug` only in a developer/demo environment. Do not publish keys, full personal conversation, or unredacted provider logs.
+Run separately when changing `GEMINI_MODEL` or prompts, and record actual mode, state version, response, citations, and invocation metadata. Enable `DEV_DEMO_DEBUG=true` and inspect `/api/debug` only in a developer/demo environment. Do not publish keys, full personal conversation, or unredacted provider logs.
 
 | State / question | Expected behavior |
 | --- | --- |

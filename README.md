@@ -20,7 +20,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-On Windows PowerShell, use `Copy-Item .env.example .env.local` and `npm.cmd` if script execution policy blocks `npm.ps1`. Open http://127.0.0.1:3000. No inference account is needed: the default is visibly labeled **Scripted fallback**.
+Copy the environment template only when `.env.local` does not already exist. On Windows PowerShell, use `Copy-Item .env.example .env.local` and `npm.cmd` if script execution policy blocks `npm.ps1`. Open http://127.0.0.1:3000. Without a Google key, MORA is visibly labeled **Scripted fallback** and the full episode remains playable.
 
 ```sh
 npm run typecheck
@@ -42,44 +42,44 @@ LISTENER, RELAY, VAULT, their queue, messages, timestamps, records, and all empl
 
 The server actually persists anonymous sessions, versioned states, action/event records, conversation, and inference metadata in SQLite. Reload and choose Continue to restore. An HttpOnly anonymous cookie identifies the investigation; it is not an account. Replay creates a new session. JSON exports include only discovered documents and, after completion, that ending's scene.
 
-MORA's scripted mode uses authored responses selected from actual investigation state and question topics. It is useful without credentials, but is **not model inference**. OpenRouter and Ollama modes make actual server-side HTTP inference calls. A failed call uses labeled scripted assistance and offers retry; controls remain independent.
+MORA's scripted mode uses authored responses selected from actual investigation state and question topics. It is useful without credentials, but is **not model inference**. Google AI Studio is the only live provider. Failed requests use labeled scripted assistance and offer retry; operational controls remain independent.
 
-## Hosted Gemma
+## Google AI Studio / Gemma 4
 
-Set in `.env.local` or your deployment's environment, then restart:
+Set these in `.env.local` or the deployment environment, then restart:
 
 ```dotenv
-AI_PROVIDER=openrouter
-OPENROUTER_API_KEY=your_key
-OPENROUTER_MODEL=google/gemma-3-27b-it
+AI_PROVIDER=google
+GEMINI_API_KEY=your_key
+GEMINI_MODEL=gemma-4-26b-a4b-it
 ```
 
-The [Gemma 3 27B model ID](https://openrouter.ai/google/gemma-3-27b-it) was checked against the official catalog during implementation. Availability and pricing depend on the provider. No free tier is assumed. The adapter uses the [OpenRouter chat API](https://openrouter.ai/docs/api/reference/overview) with a validated JSON protocol, avoiding assumptions about native tools or strict structured-output support on a particular route.
+The key stays on the server and is sent only to Google's API in the `x-goog-api-key` header. Keep `.env.local` out of Git. `GEMINI_MODEL` defaults to the model above. Both `gemma-4-26b-a4b-it` and `gemma-4-31b-it` were returned by Google's models API for the configured project on 2026-10-29. The default model also completed live MORA checks; this is not a guarantee of access or available quota for another project.
 
-Hosted inference sends discovered fictional game evidence and the relevant recent conversation to OpenRouter and its selected provider. It is not offline or automatically private. Do not enter personal information into the fictional console.
+The adapter uses native [Google generateContent REST requests](https://ai.google.dev/api/generate-content), system instructions, and user/model conversation roles. Gemma 4 thinking is set to `minimal`, as documented in the [Gemma API guide](https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api). The adapter exposes the four read-only investigation tools through native Google function declarations. Function calls and results are translated into the existing validated investigation loop: at most two read-tool rounds, one output repair, and four total completions. Function-call IDs and signatures are preserved in ephemeral transport history, never in public state or logs. Final answers use validated JSON. No Google Search, code execution, or operational model tools are enabled.
 
-## Local Gemma
+Google currently lists Gemma 4 input/output as free of charge on its [pricing page](https://ai.google.dev/gemini-api/docs/pricing#gemma-4). Your project still has quota and rate limits; free access is not unlimited. Hosted requests send discovered fictional evidence and relevant recent conversation to Google. This is not offline inference, and Google's free-tier data-use terms apply.
 
-Install Ollama separately, then:
+For an explicitly credential-free demo, set `AI_PROVIDER=scripted`. Missing keys, invalid configuration, quota limits, provider errors, blocked/truncated output, and timeouts preserve game progress and fall back honestly. The old hosted/local adapters have been removed; only `google` and `scripted` are supported values.
+
+## Testing inference
+
+Ordinary `npm test` and `npm run test:e2e` use fixtures or forced scripted mode. Chromium gameplay tests start their own server on port 3100 with an isolated temporary database and cannot consume your Google quota. Stop another development server in this checkout before browser tests because Next.js uses one development build lock.
+
+These commands are explicit live checks and consume the configured project's quota:
 
 ```sh
-ollama pull gemma3:4b
-ollama serve
+npm run test:ai:live
+npm run test:ai:browser
 ```
 
-```dotenv
-AI_PROVIDER=ollama
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_MODEL=gemma3:4b
-```
+The first checks a native evidence-tool round trip plus initial, diagnostic, and recovered-archive questions through the real adapter. The second starts an isolated Google-enabled server on port 3200 and verifies a real conversation through the browser, session persistence, metadata, and responsive controls. Sanitized fictional responses and actual invocation metadata are saved under ignored `data/google-live-*.json`; no API keys or full inference prompts are written. See [AI evaluation](docs/ai-evaluation.md) for results and the limits of these checks.
 
-The tag is listed in the [official Ollama Gemma 3 library](https://ollama.com/library/gemma3); the implementation uses its [chat endpoint](https://docs.ollama.com/api/chat). Local inference requires suitable memory/hardware. Actual inference on this machine has not been verified. Docker's loopback points inside the container; use an appropriate host address when Ollama runs on the host. No provider secret is exposed to the client.
-
-Gemma is an **open-weight** model under the [Gemma terms](https://ai.google.dev/gemma/terms), not a claim of unrestricted open-source licensing. Inference is not automatically cost-free. Prompts are inspectable in `src/lib/ai/operator.ts`; model IDs and adapters are replaceable. No weights are distributed with this project.
+Gemma 4 is an **open-weight** model licensed under [Apache 2.0 according to its official model card](https://ai.google.dev/gemma/docs/core/model_card_4). The older Gemma 3 license should not be assumed to apply to Gemma 4. No weights are bundled. Prompts and tool boundaries are inspectable, and the small provider interface is replaceable; this implementation currently uses hosted Google inference only.
 
 ## Deployment
 
-One Node process/container, one SQLite database. Build the supplied Dockerfile or use `npm ci && npm run build`, then `npm start`. Set `APP_BASE_URL` to the exact public HTTPS origin, `NODE_ENV=production`, and `DATABASE_PATH` to a writable persistent location. The anonymous cookie is Secure for an HTTPS base URL.
+One Node process/container, one SQLite database. Build the supplied Dockerfile or use `npm ci && npm run build`, then `npm start`. Set `APP_BASE_URL` to the exact public HTTPS origin, `NODE_ENV=production`, `DATABASE_PATH` to a writable persistent location, and the Google variables from the configuration above. The anonymous cookie is Secure for an HTTPS base URL.
 
 On Render, create one Docker web service, set a health check at `/api/health`, and attach a persistent disk mounted at `/app/data`. Set `DATABASE_PATH=/app/data/dead-air.sqlite` and the public HTTPS `APP_BASE_URL`. Persistent disks depend on your Render plan. Keep one instance: this SQLite implementation does not coordinate multiple replicas. Back up the SQLite database with its WAL-aware backup facility or while the app is stopped. The Docker image includes migrations and runs as the non-root `node` user; ensure the mount is writable by that user.
 

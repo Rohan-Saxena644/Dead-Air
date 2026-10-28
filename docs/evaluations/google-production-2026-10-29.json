@@ -1,0 +1,37 @@
+{
+  "evaluatedAt": "2026-10-28T20:42:21.037Z",
+  "health": 200,
+  "session": 200,
+  "httpOnlyCookie": true,
+  "duplicateActionDeduplicated": true,
+  "staleActionRejected": 409,
+  "savedConversationEntries": 2,
+  "discoveredExportCount": 1,
+  "debugHidden": 404,
+  "staticAssetsChecked": 7,
+  "inference": {
+    "provider": "google",
+    "model": "gemma-4-26b-a4b-it",
+    "durationMs": 4089,
+    "toolCalls": [],
+    "calls": [
+      {
+        "durationMs": 4085,
+        "usage": {
+          "promptTokens": 1037,
+          "completionTokens": 133,
+          "totalTokens": 1170
+        },
+        "modelVersion": "gemma-4-26b-a4b-it"
+      }
+    ],
+    "validation": "passed",
+    "fallbackReason": null,
+    "stateVersion": 1,
+    "usage": {
+      "promptTokens": 1037,
+      "completionTokens": 133,
+      "totalTokens": 1170
+    }
+  }
+}

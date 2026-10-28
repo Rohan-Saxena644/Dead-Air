@@ -8,9 +8,9 @@ The ghost is an unresolved obligation kept alive by a failed acknowledgement. A 
 
 ## Actual technologies
 
-Next.js App Router, React, strict TypeScript, Tailwind CSS with custom authored console styling, Lucide SVG icons, Zod, better-sqlite3 and versioned SQL, Vitest, and Playwright. Optional Web Audio synthesizes a hum and small event tones locally. No separate backend or real microservices. OpenRouter and local Ollama adapters support configurable Gemma models; scripted operator is the credential-free mode. Sentry is not integrated.
+Next.js App Router, React, strict TypeScript, Tailwind CSS with custom authored console styling, Lucide SVG icons, Zod, better-sqlite3 and versioned SQL, Vitest, and Playwright. Optional Web Audio synthesizes a hum and small event tones locally. No separate backend or real microservices. A Google AI Studio adapter serves configurable Gemma 4 models; scripted operator is the credential-free mode. Google is the only live provider. Sentry is not integrated.
 
-Gemma is open-weight; its model terms apply. Source prompts, the knowledge projection, and all tools are inspectable. The inference adapter can be replaced. Hosted inference sends context to a remote provider; local inference is optional and not verified on this machine. No claim of free inference or universal privacy is made.
+Gemma 4 is open-weight and its official model card specifies Apache 2.0. Source prompts, the knowledge projection, and all tools are inspectable. The inference adapter can be replaced. Hosted inference sends discovered context to Google. Local inference is not integrated. No claim of free inference or universal privacy is made.
 
 ## Technical discoveries and tradeoffs
 
@@ -23,4 +23,4 @@ Gemma is open-weight; its model terms apply. Source prompts, the knowledge proje
 
 ## Unverified
 
-No external deployment, judge response, testimonials, live Gemma calls, token/cost measurements, play-time study, Sentry spans, or benchmark comparisons. Actual local check results and captures are recorded separately in `verification.md` after execution.
+No external deployment, judge response, testimonials, cost measurements, play-time study, Sentry spans, or benchmark comparisons. Live Gemma responses and provider-reported token counts are recorded in the explicit Google evaluation; these are a small verification sample, not a quality benchmark. Actual local check results and captures are recorded separately in `verification.md` after execution.

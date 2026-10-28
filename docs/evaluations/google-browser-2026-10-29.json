@@ -1,0 +1,40 @@
+{
+  "evaluatedAt": "2026-10-28T20:39:32.054Z",
+  "metadata": {
+    "provider": "google",
+    "model": "gemma-4-26b-a4b-it",
+    "durationMs": 3435,
+    "toolCalls": [],
+    "calls": [
+      {
+        "durationMs": 3431,
+        "usage": {
+          "promptTokens": 1563,
+          "completionTokens": 103,
+          "totalTokens": 1666
+        },
+        "modelVersion": "gemma-4-26b-a4b-it"
+      }
+    ],
+    "validation": "passed",
+    "fallbackReason": null,
+    "stateVersion": 2,
+    "usage": {
+      "promptTokens": 1563,
+      "completionTokens": 103,
+      "totalTokens": 1666
+    }
+  },
+  "reply": {
+    "role": "assistant",
+    "message": "The write succeeded because the VAULT committed the delivery record. The acknowledgement failed because the RELAY attempted to contact a retired endpoint, /v1/receipt, which was removed during the 2019 shutdown. The data is present in the VAULT, but the system believes the task is incomplete. To understand the current state of the message, you should inspect the queue.",
+    "evidenceIds": [
+      "delivery",
+      "ack",
+      "runbook"
+    ],
+    "suggestedActionId": "queue",
+    "hintLevel": 0,
+    "mode": "Gemma · Google AI Studio"
+  }
+}

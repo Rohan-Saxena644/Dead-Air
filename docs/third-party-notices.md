@@ -15,4 +15,4 @@ Package source and installed distributions contain their complete license notice
 | TypeScript | Apache-2.0 | https://github.com/microsoft/TypeScript |
 | ESLint | MIT | https://github.com/eslint/eslint |
 
-Gemma model weights are not bundled. Configure a provider according to [Gemma terms](https://ai.google.dev/gemma/terms) and that provider's terms. Web Audio tones are synthesized; no licensed recordings or stock imagery are included. All characters and company records in the episode are fictional.
+Gemma model weights are not bundled. Gemma 4 uses [Apache 2.0 according to its official model card](https://ai.google.dev/gemma/docs/core/model_card_4); Google's hosted API terms also apply. Web Audio tones are synthesized; no licensed recordings or stock imagery are included. All characters and company records in the episode are fictional.

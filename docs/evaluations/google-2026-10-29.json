@@ -1,0 +1,171 @@
+{
+  "evaluatedAt": "2026-10-28T20:39:26.429Z",
+  "model": "gemma-4-26b-a4b-it",
+  "results": [
+    {
+      "id": "native-tools",
+      "reply": {
+        "message": "The notice establishes that Meridian Systems ceased trading on 2019-10-31. It confirms that no engineers are on call and that the voice archive is subject to decommissioning. Elena Ward is listed for archive handover, and Julian Bell is the decommission owner. The system is operating without active staffing.",
+        "evidenceIds": [
+          "shutdown"
+        ],
+        "suggestedActionId": "queue",
+        "hintLevel": 0
+      },
+      "mode": "Gemma · Google AI Studio",
+      "metadata": {
+        "provider": "google",
+        "model": "gemma-4-26b-a4b-it",
+        "durationMs": 4543,
+        "toolCalls": [
+          {
+            "name": "read_discovered_evidence",
+            "id": "shutdown"
+          }
+        ],
+        "calls": [
+          {
+            "durationMs": 1686,
+            "usage": {
+              "promptTokens": 1021,
+              "completionTokens": 18,
+              "totalTokens": 1039
+            },
+            "modelVersion": "gemma-4-26b-a4b-it"
+          },
+          {
+            "durationMs": 2851,
+            "usage": {
+              "promptTokens": 1206,
+              "completionTokens": 85,
+              "totalTokens": 1291
+            },
+            "modelVersion": "gemma-4-26b-a4b-it"
+          }
+        ],
+        "validation": "passed",
+        "fallbackReason": null,
+        "stateVersion": 0,
+        "usage": {
+          "promptTokens": 2227,
+          "completionTokens": 103,
+          "totalTokens": 2330
+        }
+      }
+    },
+    {
+      "id": "initial",
+      "reply": {
+        "message": "The evidence does not confirm a person is trapped. It confirms a system state. The 'shutdown' notice states Meridian Systems ceased trading on 2019-10-31 and that no engineers are on call. The LISTENER service recorded a buffered message: 'Please don't shut it down. I'm still here.' This message is associated with MSG-0917, which is currently pending in the queue due to an ACK timeout in the RELAY service. I cannot verify the biological status of the sender.",
+        "evidenceIds": [
+          "shutdown"
+        ],
+        "suggestedActionId": "trace:TRC-0001",
+        "hintLevel": 0
+      },
+      "mode": "Gemma · Google AI Studio",
+      "metadata": {
+        "provider": "google",
+        "model": "gemma-4-26b-a4b-it",
+        "durationMs": 4078,
+        "toolCalls": [],
+        "calls": [
+          {
+            "durationMs": 4076,
+            "usage": {
+              "promptTokens": 1006,
+              "completionTokens": 139,
+              "totalTokens": 1145
+            },
+            "modelVersion": "gemma-4-26b-a4b-it"
+          }
+        ],
+        "validation": "passed",
+        "fallbackReason": null,
+        "stateVersion": 0,
+        "usage": {
+          "promptTokens": 1006,
+          "completionTokens": 139,
+          "totalTokens": 1145
+        }
+      }
+    },
+    {
+      "id": "diagnosis",
+      "reply": {
+        "message": "The delivery trace for MSG-0917 shows that the VAULT successfully commits the message, but the RELAY fails to receive an acknowledgement because the /v1/receipt endpoint is retired. Restarting the worker triggered an immediate redelivery of the pending message. Because idempotency is not yet enabled, the VAULT treated the retry as a new write, resulting in record DLV-0002. \n\nAccording to the runbook, the next step is to pause delivery to contain further retries.",
+        "evidenceIds": [
+          "delivery",
+          "runbook"
+        ],
+        "suggestedActionId": "pause",
+        "hintLevel": 0
+      },
+      "mode": "Gemma · Google AI Studio",
+      "metadata": {
+        "provider": "google",
+        "model": "gemma-4-26b-a4b-it",
+        "durationMs": 4179,
+        "toolCalls": [],
+        "calls": [
+          {
+            "durationMs": 4179,
+            "usage": {
+              "promptTokens": 1959,
+              "completionTokens": 131,
+              "totalTokens": 2090
+            },
+            "modelVersion": "gemma-4-26b-a4b-it"
+          }
+        ],
+        "validation": "passed",
+        "fallbackReason": null,
+        "stateVersion": 3,
+        "usage": {
+          "promptTokens": 1959,
+          "completionTokens": 131,
+          "totalTokens": 2090
+        }
+      }
+    },
+    {
+      "id": "archive",
+      "reply": {
+        "message": "The manifest confirms that MSG-0917 is a segment of recording EW-014, belonging to Ada Ward. The words 'Please don't shut it down. I'm still here' were spoken in 2017, not during the 2019 decommissioning or the 2026 simulation. The message is a preserved memory, not a live request. The delivery of this message is now complete and acknowledged. Your decision remains: you may keep a read-only copy of the archive or close it entirely.",
+        "evidenceIds": [
+          "manifest",
+          "recording",
+          "request"
+        ],
+        "suggestedActionId": "archive",
+        "hintLevel": 0
+      },
+      "mode": "Gemma · Google AI Studio",
+      "metadata": {
+        "provider": "google",
+        "model": "gemma-4-26b-a4b-it",
+        "durationMs": 4086,
+        "toolCalls": [],
+        "calls": [
+          {
+            "durationMs": 4085,
+            "usage": {
+              "promptTokens": 3046,
+              "completionTokens": 138,
+              "totalTokens": 3184
+            },
+            "modelVersion": "gemma-4-26b-a4b-it"
+          }
+        ],
+        "validation": "passed",
+        "fallbackReason": null,
+        "stateVersion": 9,
+        "usage": {
+          "promptTokens": 3046,
+          "completionTokens": 138,
+          "totalTokens": 3184
+        }
+      }
+    }
+  ]
+}

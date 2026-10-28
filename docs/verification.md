@@ -6,12 +6,21 @@ Executed locally on Windows with Node.js 22.16.0 and the committed npm dependenc
 | --- | --- |
 | `npm run typecheck` | Passed, strict TypeScript |
 | `npm run lint` | Passed with no lint warnings or errors |
-| `npm test` | 27 tests passed in three suites |
-| `npm run test:e2e` | Nine Chromium tests passed |
+| `npm test` | 45 tests passed in five suites |
+| `npm run test:e2e` | Nine Chromium fixture tests passed, with isolated scripted server/database |
+| `npm run test:ai:live` | Four real Google/Gemma operator evaluations passed, including a native evidence-tool round trip |
+| `npm run test:ai:browser` | One real Google-backed browser/session evaluation passed |
 | `npm run build` | Optimized Next.js build and standalone asset/migration packaging passed |
-| `npm start` | Previously passed on 2026-10-27; packaged standalone server started on a separate local port |
-| Production health/session/actions/export/static asset smoke | Previously passed on 2026-10-27: HTTP 200, saved pause restored, duplicate action UUID did not reapply, undiscovered documents omitted from export, bundled JS served |
+| `npm start` | Passed on 2026-10-29; final Google-enabled standalone package started on loopback with an isolated temporary database |
+| Production health/session/actions/export/static asset smoke | Passed: health/session HTTP 200, saved conversation, duplicate action deduplication, stale-version 409, discovered-only export, hidden debug route, and seven served JavaScript assets |
+| Production Google inference | Passed with provider validation and no fallback; key absent from served JavaScript |
 | `git diff --check` | Passed |
+
+## Google migration ? 2026-10-29
+
+The live adapter now uses Google generateContent with server-side header authentication, a configurable Gemma 4 model, minimal thinking, and bounded responses. Old provider configuration and adapters were removed. The local key was preserved in ignored `.env.local`. No inference key is included in source, screenshots, metadata, or sanitized evaluation artifacts. Provider-reported usage is retained per successful call and aggregated without inventing missing counts.
+
+The native adapter and its failure paths have deterministic tests. The scripted operator was corrected to distinguish a reused commit from a delivery acknowledged before idempotency was enabled. The game and both endings remain unchanged.
 
 ## Browser coverage
 
@@ -34,6 +43,6 @@ The nine browser tests use Playwright's installed Chromium. Tests do not make re
 
 ## Verification limits
 
-No OpenRouter API key or running Ollama model was supplied. Both real adapters are implemented; **live Gemma inference remains unverified**. Official catalog IDs were checked, which does not establish account access, current price, model quality, native tool support, or successful inference. See `ai-evaluation.md` for live groundedness and spoiler checks.
+Google is the only live provider. The supplied Google AI Studio key successfully listed both supported Gemma 4 models, and the default model completed the explicit operator and browser checks. The five sampled replies were manually reviewed for grounding and undiscovered-story spoilers. See `ai-evaluation.md` and its sanitized sample artifacts. The final production server also completed a real Google reply; its [smoke report](evaluations/google-production-2026-10-29.json) records actual metadata and HTTP checks. This small sample does not establish general model correctness or universal account access. The native discovered-evidence read was verified live; invalid/undiscovered tool requests and provider ID/signature round trips are covered by fixtures. Broader adversarial prompt resistance and changing production quota require further evaluation.
 
 The Dockerfile and Render instructions are prepared. A Docker image build and external deployment were not run. Persistent-disk behavior on Render has not been tested. Audio activation/muting was tested in Chromium; subjective loudness and physical speaker output were not assessed. Only Chromium was tested; Safari/Firefox and assistive technology require further manual evaluation.
