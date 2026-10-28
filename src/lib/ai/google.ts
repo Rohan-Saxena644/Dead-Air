@@ -2,6 +2,11 @@ import "server-only";
 import { z } from "zod";
 import { operatorConfig } from "./config";
 import type { Provider, TokenUsage } from "./types";
+import {
+  googlePartSchema,
+  investigationFunctions,
+  nativeToolTransport,
+} from "./google-tools";
 
 const count = z.number().int().nonnegative();
 const responseSchema = z.object({
@@ -10,14 +15,7 @@ const responseSchema = z.object({
       z.object({
         content: z
           .object({
-            parts: z
-              .array(
-                z.object({
-                  text: z.string().optional(),
-                  thought: z.boolean().optional(),
-                }),
-              )
-              .max(32),
+            parts: z.array(googlePartSchema).max(32),
           })
           .optional(),
         finishReason: z.string().optional(),
@@ -70,6 +68,7 @@ async function boundedJson(response: Response): Promise<unknown> {
   }
 }
 export function createGoogleProvider(config = operatorConfig()): Provider {
+  const transport = nativeToolTransport();
   return {
     async complete(messages) {
       if (config.issue) throw new Error(config.issue);
@@ -87,19 +86,17 @@ export function createGoogleProvider(config = operatorConfig()): Provider {
             systemInstruction: {
               parts: [
                 {
-                  text: messages
-                    .filter((m) => m.role === "system")
-                    .map((m) => m.content)
-                    .join("\n\n"),
+                  text:
+                    messages
+                      .filter((m) => m.role === "system")
+                      .map((m) => m.content)
+                      .join("\n\n") +
+                    "\nUse the declared native functions when investigating evidence, rather than emitting a JSON tools request. After tool results, return the final JSON answer schema described above. Never call operational tools; none are available.",
                 },
               ],
             },
-            contents: messages
-              .filter((m) => m.role !== "system")
-              .map((m) => ({
-                role: m.role === "assistant" ? "model" : "user",
-                parts: [{ text: m.content }],
-              })),
+            contents: transport.contents(messages),
+            tools: [{ functionDeclarations: investigationFunctions }],
             generationConfig: {
               temperature: 0.25,
               maxOutputTokens: 768,
@@ -123,10 +120,13 @@ export function createGoogleProvider(config = operatorConfig()): Provider {
         throw new Error("Google response reached its output limit.");
       if (candidate?.finishReason !== "STOP")
         throw new Error("Google returned no complete answer.");
-      const content = candidate.content?.parts
-        .filter((p) => p.thought !== true)
-        .map((p) => p.text ?? "")
-        .join("");
+      const toolContent = transport.encode(candidate.content?.parts ?? []);
+      const content =
+        toolContent ??
+        candidate.content?.parts
+          .filter((p) => p.thought !== true)
+          .map((p) => p.text ?? "")
+          .join("");
       if (!content?.trim() || content.length > 12000)
         throw new Error("Google returned an empty or oversized answer.");
       const reported = data.usageMetadata;

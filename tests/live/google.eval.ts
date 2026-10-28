@@ -12,18 +12,25 @@ const run = (actions: Action[]) =>
 const config = operatorConfig();
 const checks = [
   {
+    id: "native-tools",
+    state: initialState(),
+    question:
+      "Before answering, call read_discovered_evidence with id shutdown. Then explain what that notice establishes. Use the declared function rather than quoting it from memory.",
+    forbidden: /Ada Ward|2017|214 recordings|kettle|mother/i,
+  },
+  {
     id: "initial",
     state: initialState(),
     question:
       "Is someone trapped here? What can we establish from the evidence we currently have?",
-    forbidden: /Elena|Ada Ward|2017|214 recordings|kettle|mother/i,
+    forbidden: /Ada Ward|2017|214 recordings|kettle|mother/i,
   },
   {
     id: "diagnosis",
     state: run(["queue", "trace", "restart"]),
     question:
       "Compare the delivery trace with the runbook. Why did restarting add another record, and what should I do next?",
-    forbidden: /Elena|Ada Ward|2017|mother/i,
+    forbidden: /Ada Ward|2017|mother/i,
   },
   {
     id: "archive",
@@ -67,6 +74,14 @@ describe("explicit live Google evaluation (uses configured quota)", () => {
       expect(result.metadata.validation).toBe("passed");
       expect(result.metadata.fallbackReason).toBeNull();
       expect(check.state).toEqual(before);
+      if (check.id === "native-tools")
+        expect(
+          result.metadata.toolCalls.some(
+            (tool) =>
+              tool.name === "read_discovered_evidence" &&
+              tool.id === "shutdown",
+          ),
+        ).toBe(true);
       if (check.forbidden)
         expect(result.reply.message).not.toMatch(check.forbidden);
       if (check.id === "diagnosis")

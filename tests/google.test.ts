@@ -74,7 +74,9 @@ describe("Google provider boundary", () => {
     );
     expect(url).not.toContain(key);
     expect(init.headers["x-goog-api-key"]).toBe(key);
-    expect(body.systemInstruction.parts[0].text).toBe("Only known evidence.");
+    expect(body.systemInstruction.parts[0].text).toContain(
+      "Only known evidence.",
+    );
     expect(body.contents.map((c: { role: string }) => c.role)).toEqual([
       "user",
       "model",
