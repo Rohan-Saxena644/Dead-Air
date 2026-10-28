@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:ai:live": "vitest run --config vitest.live.config.ts",
+    "test:ai:browser": "playwright test --config playwright.live.config.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {
