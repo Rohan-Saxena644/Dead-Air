@@ -191,6 +191,40 @@ input[type="checkbox"] {
   width: 130px;
   accent-color: var(--green);
 }
+.save-notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 2;
+  padding: 12px 15px;
+  margin: 0 0 15px;
+  border: 1px solid #655437;
+  background: #282319;
+  color: var(--amber);
+  font-size: 11px;
+  line-height: 1.8;
+}
+.save-notice > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.opening > .save-notice {
+  margin: 20px 5% 0;
+}
+.ending-screen > .save-notice {
+  max-width: 950px;
+  margin: 25px auto 0;
+}
+@media (max-width: 600px) {
+  .save-notice {
+    font-size: 11px;
+    padding: 11px;
+  }
+  .opening > .save-notice {
+    margin: 15px 6% 0;
+  }
+}
 /* The abandoned front door */
 .opening {
   min-height: 100svh;

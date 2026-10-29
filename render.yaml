@@ -1,0 +1,25 @@
+# Free beta: SQLite saves may reset on restart/redeploy; the UI discloses this.
+services:
+  - type: web
+    name: dead-air-beta
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: "off"
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: AI_PROVIDER
+        value: google
+      - key: GEMINI_MODEL
+        value: gemma-4-26b-a4b-it
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_PATH
+        value: /app/data/dead-air.sqlite
+      - key: SAVE_STORAGE
+        value: ephemeral
+      - key: DEV_DEMO_DEBUG
+        value: "false"

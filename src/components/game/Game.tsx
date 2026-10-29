@@ -29,12 +29,14 @@ import { Terminal } from "./Terminal";
 import { labels } from "./labels";
 import { actionReport, type ActionReport } from "@/lib/game/notebook";
 import { ActionFeedback } from "./ActionFeedback";
+import { SaveNotice } from "./SaveNotice";
 export function Game() {
   const [state, setState] = useState<PublicState | null>(null);
   const [conversation, setConversation] = useState<Conversation[]>([]);
   const [mode, setMode] = useState("Scripted fallback");
   const [entered, setEntered] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const actionLock = useRef(false);
   const [chatBusy, setChatBusy] = useState(false);
@@ -58,6 +60,7 @@ export function Game() {
     void fetch("/api/session")
       .then((r) => r.json())
       .then((d) => {
+        setSaveNotice(d.saveNotice ?? null);
         if (d.state) {
           setState(d.state);
           setConversation(d.conversation);
@@ -78,6 +81,7 @@ export function Game() {
       const r = await fetch("/api/session", { method: "POST" });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error);
+      setSaveNotice(d.saveNotice ?? null);
       setState(d.state);
       stateRef.current = d.state;
       setConversation([]);
@@ -266,6 +270,7 @@ export function Game() {
             <Comfort />
           </div>
         </header>
+        <SaveNotice message={saveNotice} />
         <div className="opening-main">
           <div className="episode-label">
             <span /> AN INTERACTIVE SYSTEMS HORROR{" "}
@@ -371,6 +376,7 @@ export function Game() {
           </span>
           <Comfort />
         </header>
+        <SaveNotice message={saveNotice} />
         <div className="ending-content">
           <div className="episode-label">
             <span className="green">●</span> {state.finalScene.subtitle}
@@ -488,6 +494,7 @@ export function Game() {
           <span className="muted">/</span> {mode}
         </span>
       </div>
+      <SaveNotice message={saveNotice} />
       <div className="mission-bar">
         <div className="mission-number">!</div>
         <div>

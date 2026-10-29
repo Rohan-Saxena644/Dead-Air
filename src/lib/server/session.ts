@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { randomBytes } from "node:crypto";
 import { createSession, getSession } from "../db/store";
+import { appBaseUrl, secureSessionCookie } from "./deployment";
 export async function session() {
   const jar = await cookies();
   const id = jar.get("dead-air")?.value;
@@ -15,9 +16,7 @@ export async function startSession() {
   (await cookies()).set("dead-air", id, {
     httpOnly: true,
     sameSite: "strict",
-    secure:
-      process.env.NODE_ENV === "production" &&
-      process.env.APP_BASE_URL?.startsWith("https://"),
+    secure: secureSessionCookie(),
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   });
@@ -30,8 +29,7 @@ export function sameOrigin(req: Request) {
     const parsed = new URL(origin);
     return (
       (parsed.protocol === "http:" || parsed.protocol === "https:") &&
-      (origin === process.env.APP_BASE_URL ||
-        parsed.host === req.headers.get("host"))
+      (origin === appBaseUrl() || parsed.host === req.headers.get("host"))
     );
   } catch {
     return false;

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { startSession, session, sameOrigin } from "@/lib/server/session";
 import { publicState } from "@/lib/server/projection";
 import { configuredMode } from "@/lib/ai/operator";
+import { saveNotice } from "@/lib/server/deployment";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET() {
@@ -12,8 +13,9 @@ export async function GET() {
           state: publicState(s.state),
           conversation: s.conversation,
           mode: configuredMode(),
+          saveNotice: saveNotice(),
         }
-      : { state: null },
+      : { state: null, saveNotice: saveNotice() },
   );
 }
 export async function POST(req: Request) {
@@ -24,5 +26,6 @@ export async function POST(req: Request) {
     state: publicState(s!.state),
     conversation: [],
     mode: configuredMode(),
+    saveNotice: saveNotice(),
   });
 }

@@ -12,6 +12,7 @@ export default defineConfig({
     url: "http://127.0.0.1:3100/api/health",
     reuseExistingServer: false,
     env: {
+      SAVE_STORAGE: "ephemeral",
       AI_PROVIDER: "scripted",
       GEMINI_API_KEY: "",
       DATABASE_PATH: join(tmpdir(), `dead-air-browser-${randomUUID()}.sqlite`),
