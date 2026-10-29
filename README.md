@@ -79,11 +79,13 @@ Gemma 4 is an **open-weight** model licensed under [Apache 2.0 according to its 
 
 ## Deployment
 
+The selected first release is a **free public beta with temporary saves**. The root [render.yaml](render.yaml) defines the free Docker service; see [the Render launch steps](docs/deploy-render.md). It sets `SAVE_STORAGE=ephemeral`, displays a save-reset notice throughout the game, and prompts for the Google key outside source control. No paid disk or database is declared. `RENDER_EXTERNAL_URL` supplies the production HTTPS origin automatically; `APP_BASE_URL` is an optional custom-domain override on Render.
+
 One Node process/container, one SQLite database. Build the supplied Dockerfile or use `npm ci && npm run build`, then `npm start`. Set `APP_BASE_URL` to the exact public HTTPS origin, `NODE_ENV=production`, `DATABASE_PATH` to a writable persistent location, and the Google variables from the configuration above. The anonymous cookie is Secure for an HTTPS base URL.
 
 On Render, create one Docker web service, set a health check at `/api/health`, and attach a persistent disk mounted at `/app/data`. Set `DATABASE_PATH=/app/data/dead-air.sqlite` and the public HTTPS `APP_BASE_URL`. Persistent disks depend on your Render plan. Keep one instance: this SQLite implementation does not coordinate multiple replicas. Back up the SQLite database with its WAL-aware backup facility or while the app is stopped. The Docker image includes migrations and runs as the non-root `node` user; ensure the mount is writable by that user.
 
-An ephemeral demo may run without a disk, but **saves can reset on redeploy/restart**. Disclose that on any public demo. A browser cookie does not make an ephemeral filesystem durable. No external deployment or paid service was created by this implementation.
+An ephemeral demo may run without a disk, but **saves can reset on redeploy/restart**. The free Blueprint enables that disclosure in the UI. A browser cookie does not make an ephemeral filesystem durable. No external deployment or paid service was created by this implementation.
 
 ## Limits and verification
 

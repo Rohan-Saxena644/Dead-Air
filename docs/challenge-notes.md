@@ -19,7 +19,7 @@ Gemma 4 is open-weight and its official model card specifies Apache 2.0. Source 
 - Idempotency and acknowledgement repair solve different problems. Neither deletes earlier duplicates. The episode remains solvable without making a mistake first.
 - The engine owns narrative unlocks. Model tool access is restricted to player-visible knowledge and cannot unlock an ending or execute an action.
 - A JSON protocol works without assuming native tool or schema support for every hosted Gemma route. Validation and bounded repair are necessary, but factual faithfulness still needs live review.
-- SQLite is deliberately single-instance. A persistent mount is required for durable hosted saves; an ephemeral demo must disclose reset behavior.
+- SQLite is deliberately single-instance. A persistent mount is required for durable hosted saves. The selected free beta uses an ephemeral filesystem and displays a save-reset notice; its Blueprint declares no paid disk.
 
 ## Unverified
 

@@ -6,8 +6,10 @@ Executed locally on Windows with Node.js 22.16.0 and the committed npm dependenc
 | --- | --- |
 | `npm run typecheck` | Passed, strict TypeScript |
 | `npm run lint` | Passed with no lint warnings or errors |
-| `npm test` | 45 tests passed in five suites |
-| `npm run test:e2e` | Nine Chromium fixture tests passed, with isolated scripted server/database |
+| `npm test` | 48 tests passed in six suites |
+| Gameplay browser suite | Ten Chromium tests passed against the built Linux Docker container in scripted mode |
+| `docker build -t dead-air:beta .` | Passed after adding the native SQLite build toolchain to the build stage |
+| `npm run test:docker:browser` | Passed: native SQLite writes, non-root runtime, static assets, temporary-save notice, mounted restart persistence, and ten browser playthroughs |
 | `npm run test:ai:live` | Four real Google/Gemma operator evaluations passed, including a native evidence-tool round trip |
 | `npm run test:ai:browser` | One real Google-backed browser/session evaluation passed |
 | `npm run build` | Optimized Next.js build and standalone asset/migration packaging passed |
@@ -24,6 +26,8 @@ The native adapter and its failure paths have deterministic tests. The scripted 
 
 ## Browser coverage
 
+The free-beta check runs the browser suite against the deployment image, avoiding an occupied local development port. It adds mobile coverage for the temporary-save disclosure before and during play. The container uses no Google key, runs as UID 1000, and contains neither `.env.local` nor the build compiler. The mounted restart check passed; that is separate from the free hosting plan, which has no persistent disk. See [the actual container report](evaluations/docker-2026-10-29.json) and `screenshots/free-beta-mobile.png`.
+
 The 2026-10-28 feature checks add the guided incident notebook and operational consequence reports. Desktop and mobile playthroughs verify discovery-gated instructions, recovery through notebook action buttons, restoring a partly completed checklist after reload, and an acknowledged retry that adds zero archive records. Reopening the notebook resets its scroll position. The objective and shortcut were visually checked at 390px width after correcting a narrow text layout. New captures: `notebook-desktop.png`, `notebook-mobile.png`, and `recovery-feedback-*.png`.
 
 - Preserve ending reached; reload restored both mid-investigation and completed progress.
@@ -39,10 +43,10 @@ The 2026-10-28 feature checks add the guided incident notebook and operational c
 
 Actual screenshots were captured and visually inspected at 1440px desktop, 1366 × 768 laptop, and 390 × 844 mobile widths, including both final scenes. Inspection caught and corrected a panel overflow and an opening-menu stacking problem. The shell now starts collapsed and the laptop topology compacts on short screens. See `screenshots/`; the ending images contain spoilers.
 
-The nine browser tests use Playwright's installed Chromium. Tests do not make real inference calls. Provider fixtures cover malformed JSON, provider failure, discovery-gated tools, invalid citations/actions, and bounded tool rounds. The pure engine tests cover commit-before-ACK, duplicate retries, both restart modes, idempotency, acknowledgement repair, retained history, prerequisites, and recovery without a restart mistake. SQLite tests cover persistence, action UUID deduplication, and stale version rejection. Notebook tests cover source-gated instructions, a complete legal route, repair-first recovery, restoring derived progress, and accurate operational deltas.
+The browser tests use Playwright's installed Chromium. Tests do not make real inference calls. Provider fixtures cover malformed JSON, provider failure, discovery-gated tools, invalid citations/actions, and bounded tool rounds. The pure engine tests cover commit-before-ACK, duplicate retries, both restart modes, idempotency, acknowledgement repair, retained history, prerequisites, and recovery without a restart mistake. SQLite tests cover persistence, action UUID deduplication, and stale version rejection. Notebook tests cover source-gated instructions, a complete legal route, repair-first recovery, restoring derived progress, and accurate operational deltas.
 
 ## Verification limits
 
 Google is the only live provider. The supplied Google AI Studio key successfully listed both supported Gemma 4 models, and the default model completed the explicit operator and browser checks. The five sampled replies were manually reviewed for grounding and undiscovered-story spoilers. See `ai-evaluation.md` and its sanitized sample artifacts. The final production server also completed a real Google reply; its [smoke report](evaluations/google-production-2026-10-29.json) records actual metadata and HTTP checks. This small sample does not establish general model correctness or universal account access. The native discovered-evidence read was verified live; invalid/undiscovered tool requests and provider ID/signature round trips are covered by fixtures. Broader adversarial prompt resistance and changing production quota require further evaluation.
 
-The Dockerfile and Render instructions are prepared. A Docker image build and external deployment were not run. Persistent-disk behavior on Render has not been tested. Audio activation/muting was tested in Chromium; subjective loudness and physical speaker output were not assessed. Only Chromium was tested; Safari/Firefox and assistive technology require further manual evaluation.
+The Linux Docker image build and local container/browser checks passed. A free Render Blueprint is prepared; no external deployment has been run. Persistent-disk behavior on Render has not been tested. Audio activation/muting was tested in Chromium; subjective loudness and physical speaker output were not assessed. Only Chromium was tested; Safari/Firefox and assistive technology require further manual evaluation.
