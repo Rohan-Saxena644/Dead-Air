@@ -2,11 +2,15 @@
 
 **02:13 AM. Meridian Systems ceased operations seven years ago. One connection is still active.**
 
-*The Last Acknowledgement* is a complete browser investigation played through a forgotten operations dashboard. Follow an old voice through three simulated services, diagnose a real distributed-systems failure, recover nine documents, and choose between preserving the archive and finishing its shutdown. Intended play time: 10–15 minutes, including reading and investigation.
+*The Last Acknowledgement* is a complete browser investigation played through a forgotten operations dashboard. Follow an old voice through three simulated services, diagnose a real distributed-systems failure, recover ten documents, and choose between preserving the archive and finishing its shutdown. Intended play time: 10–15 minutes, including reading and investigation.
 
 The industrial console uses local CSS, system fonts, SVG/Lucide icons, optional Web Audio ambience, reduced-motion support, and mobile panel navigation. There is no countdown. All commands are parsed fictional actions; no shell, real service, or user file is controlled by the terminal.
 
 For a first playthrough, use **Open incident notebook** beside the current objective. Its investigation plan reveals the recovery checklist after you read the recovered runbook, tracks the actual machine state, and offers a legal next action. Completed steps restore from your save. Operational reports show whether your last control changed attempts, added archive records, or drained the queue; repairing a route alone is never reported as a completed delivery.
+
+There are **two main endings with four authored outcome variations**. An optional custody comparison asks you to distinguish the original speaker and depositor from an unsigned delivery-account label, then prepare a verified index or leave uncertain attribution sealed. Preparing an index does not prove download or outside receipt. Both main choices still require resolving the incident and reading the final request. Replay starts a clean session; completed-outcome badges stay locally in the browser when storage is available. The central mystery remains fixed.
+
+Submission materials: [DEV draft](docs/dev-submission.md), [remaining human steps](docs/submission-checklist.md), [actual gameplay recording and captions](artifacts/demo/README.md), and [submission verification](docs/submission-verification.md).
 
 ![The DEAD AIR investigation console, captured from the running application](docs/screenshots/console-desktop.png)
 

@@ -1,0 +1,32 @@
+{
+  "file": "dead-air-demo.webm",
+  "durationSeconds": 176.4,
+  "width": 1920,
+  "height": 1080,
+  "codec": "vp9",
+  "bytes": 32540771,
+  "audio": "Silent browser recording",
+  "source": "Actual Playwright production gameplay; no cuts or reconstructed responses",
+  "hasH264Encoder": false,
+  "subtitleOffsetSeconds": 1.600999999999999,
+  "conversion": "Installed FFmpeg has no H.264 encoder; original WebM retained",
+  "inspectedFrames": [
+    {
+      "seconds": 5,
+      "file": "preview-opening.png"
+    },
+    {
+      "seconds": 70,
+      "file": "preview-investigation.png"
+    },
+    {
+      "seconds": 108,
+      "file": "preview-recovery.png"
+    },
+    {
+      "seconds": 158,
+      "file": "preview-outcome.png"
+    }
+  ],
+  "stream": "Stream #0:0(eng): Video: vp9 (libvpx-vp9) (Profile 0), yuv420p(tv, progressive), 1920x1080, SAR 1:1 DAR 16:9, 25 fps, 25 tbr, 1k tbn (default)"
+}

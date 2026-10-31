@@ -16,7 +16,7 @@ export default defineConfig({
       AI_PROVIDER: "scripted",
       GEMINI_API_KEY: "",
       SAVE_STORAGE: "ephemeral",
-      DEV_DEBUG: "false",
+      DEV_DEMO_DEBUG: "false",
       DATABASE_PATH: join(
         tmpdir(),
         `dead-air-production-${randomUUID()}.sqlite`,

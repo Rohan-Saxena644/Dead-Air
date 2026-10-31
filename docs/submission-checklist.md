@@ -1,0 +1,7 @@
+# Remaining human submission steps
+
+- Push the reviewed local commits to `https://github.com/Rohan-Saxena644/Dead-Air` so the submitted source is public and current.
+- Deploy the reviewed build when ready, set the Google key only in the host’s secret settings, and verify the resulting public game URL. Replace `LIVE_GAME_URL` in `docs/dev-submission.md`. No public deployment was verified in this pass.
+- Upload `artifacts/demo/dead-air-demo.webm` to YouTube. Use `artifacts/demo/youtube.md` for the title, description, and chapters, and upload `artifacts/demo/captions.srt` as captions if useful. Replace `YOUTUBE_VIDEO_URL` in the post. If MP4 is preferred, use the conversion command in `artifacts/demo/README.md` with a full FFmpeg build.
+- Upload the actual article screenshots to DEV’s image host and replace their relative Markdown paths with the generated image URLs. Mapping: opening → `docs/screenshots/submission-opening.png`; investigation → `docs/screenshots/submission-investigation.png`. The optional ending image is `docs/screenshots/submission-ending.png` and contains story spoilers.
+- Create the DEV draft through the [official Week 4 submission template](https://dev.to/challenges/hacktoberfest-week4-2026-10-26), paste `docs/dev-submission.md`, retain `devchallenge` and `hf26challenge`, and preview links, images, and the spoiler disclosure. Publish after reviewing. Do not claim the Render prize category unless an actual Render deployment has been verified.
