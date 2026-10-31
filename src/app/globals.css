@@ -2526,3 +2526,57 @@ html[data-comfort="true"] *:after {
 html[data-comfort="true"] .opening:after {
   display: none;
 }
+.archive-review {
+  padding: 22px 28px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  background: #101713;
+}
+.archive-review h2 {
+  font-size: 19px;
+  margin: 8px 0;
+}
+.archive-review p,
+.outcome-badges p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #aeb8b0;
+}
+.archive-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 10px;
+}
+.archive-review-actions button {
+  font-size: 12px;
+}
+.feedback-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 8px;
+}
+.outcome-badges {
+  margin: 25px 0;
+  padding: 20px;
+  border: 1px solid #334039;
+}
+.outcome-badges > div {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.outcome-consequence {
+  border-left: 2px solid #b6c39a;
+  padding-left: 16px;
+}
+@media (max-width: 760px) {
+  .archive-review {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+}

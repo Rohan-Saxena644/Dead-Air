@@ -15,5 +15,8 @@ export interface ProviderResult {
   modelVersion?: string;
 }
 export interface Provider {
-  complete(messages: ModelMessage[]): Promise<ProviderResult>;
+  complete(
+    messages: ModelMessage[],
+    options?: { signal: AbortSignal },
+  ): Promise<ProviderResult>;
 }

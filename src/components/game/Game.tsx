@@ -30,6 +30,8 @@ import { labels } from "./labels";
 import { actionReport, type ActionReport } from "@/lib/game/notebook";
 import { ActionFeedback } from "./ActionFeedback";
 import { SaveNotice } from "./SaveNotice";
+import { ArchiveReview } from "./ArchiveReview";
+import { OutcomeBadges } from "./OutcomeBadges";
 export function Game() {
   const [state, setState] = useState<PublicState | null>(null);
   const [conversation, setConversation] = useState<Conversation[]>([]);
@@ -45,6 +47,7 @@ export function Game() {
   const [selected, setSelected] = useState<EvidenceId | null>(null);
   const [help, setHelp] = useState(false);
   const [error, setError] = useState("");
+  const [expired, setExpired] = useState(false);
   const [retryQuestion, setRetryQuestion] = useState("");
   const [confirmation, setConfirmation] = useState<Ending | null>(null);
   const [mobile, setMobile] = useState("investigate");
@@ -72,6 +75,26 @@ export function Game() {
       )
       .finally(() => setLoading(false));
   }, []);
+  async function continueInvestigation() {
+    setBusy(true);
+    try {
+      const response = await fetch("/api/session");
+      if (!response.ok) throw new Error("Could not reconnect. Try again.");
+      const saved = await response.json();
+      if (!saved.state) setExpired(true);
+      else {
+        setState(saved.state);
+        stateRef.current = saved.state;
+        setConversation(saved.conversation);
+        setMode(saved.mode);
+      }
+      setEntered(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not reconnect.");
+    } finally {
+      setBusy(false);
+    }
+  }
   async function start() {
     sessionEpoch.current++;
     setChatBusy(false);
@@ -87,6 +110,7 @@ export function Game() {
       setConversation([]);
       setMode(d.mode);
       setEntered(true);
+      setExpired(false);
       setTab("logs");
       setTraceId(null);
       setSelected(null);
@@ -100,56 +124,61 @@ export function Game() {
       setBusy(false);
     }
   }
-  const act = useCallback(async (action: Action): Promise<string> => {
-    const current = stateRef.current;
-    if (!current || actionLock.current)
-      return "An action is already in progress.";
-    actionLock.current = true;
-    setBusy(true);
-    setError("");
-    try {
-      const r = await fetch("/api/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action,
-          actionId: crypto.randomUUID(),
-          version: current.version,
-        }),
-      });
-      const d = await r.json();
-      if (d.state) {
-        stateRef.current = d.state;
-        setState(d.state);
+  const act = useCallback(
+    async (action: Action, suggestionVersion?: number): Promise<string> => {
+      const current = stateRef.current;
+      if (!current || actionLock.current)
+        return "An action is already in progress.";
+      actionLock.current = true;
+      setBusy(true);
+      setError("");
+      try {
+        const r = await fetch("/api/action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action,
+            actionId: crypto.randomUUID(),
+            version: current.version,
+            suggestionVersion,
+          }),
+        });
+        const d = await r.json();
+        if (r.status === 401) setExpired(true);
+        if (d.state) {
+          stateRef.current = d.state;
+          setState(d.state);
+        }
+        if (!r.ok) throw new Error(d.error);
+        const result = actionReport(current, d.state, action);
+        if (result) setReport(result);
+        if (action.startsWith("read:"))
+          setSelected(action.slice(5) as EvidenceId);
+        if (action === "archive") setTab("archive");
+        if (action === "trace" || action.startsWith("trace:")) {
+          setTab("traces");
+          setTraceId(
+            action === "trace"
+              ? d.state.queue.attempts.at(-1)?.id
+              : action.slice(6),
+          );
+        }
+        if (action === "queue" || action === "message") setTab("queue");
+        return `${labels[action] ?? "Action"} complete. ${d.state.events.at(-1)?.text ?? ""}`;
+      } catch (e) {
+        const message =
+          e instanceof Error
+            ? e.message
+            : "Connection lost. Reload the saved investigation to check the result.";
+        setError(message);
+        return message;
+      } finally {
+        actionLock.current = false;
+        setBusy(false);
       }
-      if (!r.ok) throw new Error(d.error);
-      const result = actionReport(current, d.state, action);
-      if (result) setReport(result);
-      if (action.startsWith("read:"))
-        setSelected(action.slice(5) as EvidenceId);
-      if (action === "archive") setTab("archive");
-      if (action === "trace" || action.startsWith("trace:")) {
-        setTab("traces");
-        setTraceId(
-          action === "trace"
-            ? d.state.queue.attempts.at(-1)?.id
-            : action.slice(6),
-        );
-      }
-      if (action === "queue" || action === "message") setTab("queue");
-      return `${labels[action] ?? "Action"} complete. ${d.state.events.at(-1)?.text ?? ""}`;
-    } catch (e) {
-      const message =
-        e instanceof Error
-          ? e.message
-          : "Connection lost. Reload the saved investigation to check the result.";
-      setError(message);
-      return message;
-    } finally {
-      actionLock.current = false;
-      setBusy(false);
-    }
-  }, []);
+    },
+    [],
+  );
   const active = entered && state !== null && !state.ending;
   useEffect(() => {
     if (!selected && !help && !confirmation) return;
@@ -193,12 +222,13 @@ export function Game() {
       if (
         document.visibilityState === "visible" &&
         !actionLock.current &&
-        !selected
+        !selected &&
+        !expired
       )
         void act("advance");
     }, 25000);
     return () => clearInterval(timer);
-  }, [active, act, selected]);
+  }, [active, act, selected, expired]);
   async function ask(question: string) {
     if (chatBusy) return;
     const epoch = sessionEpoch.current;
@@ -213,6 +243,7 @@ export function Game() {
       });
       const d = await r.json();
       if (epoch !== sessionEpoch.current) return;
+      if (r.status === 401) setExpired(true);
       if (!r.ok) throw new Error(d.error);
       setConversation((c) => [
         ...c,
@@ -295,14 +326,18 @@ export function Game() {
                 <span>One connection is still active.</span>
               </p>
               <p className="opening-description">
-                An abandoned dashboard. A message that won’t stop.
+                You are the incoming archive operator. A message from 2019 won’t
+                stop.
                 <br />
-                Find the failure. Follow the evidence. Decide what remains.
+                Inspect its queue, follow the missing receipt, then decide what
+                remains.
               </p>
               <div className="opening-actions">
                 <button
                   className="primary-button"
-                  onClick={() => (state ? setEntered(true) : void start())}
+                  onClick={() =>
+                    state ? void continueInvestigation() : void start()
+                  }
                   disabled={busy || loading}
                 >
                   {loading
@@ -327,8 +362,12 @@ export function Game() {
                 <i />
                 <span>NO BACKEND EXPERIENCE NEEDED</span>
                 <i />
-                <span>2 ENDINGS</span>
+                <span>2 ENDINGS / 4 VARIATIONS</span>
               </div>
+              <p className="tiny muted">
+                Live MORA sends your questions and discovered game context to
+                Google. Scripted hints work without inference.
+              </p>
             </div>
             <div className="signal-visual" aria-hidden="true">
               <div className="radar-rings">
@@ -367,6 +406,27 @@ export function Game() {
       </main>
     );
   if (!state) return null;
+  if (expired)
+    return (
+      <main className="ending-screen">
+        <div className="ending-content">
+          <h1>This console’s save has reset.</h1>
+          <p>
+            The temporary server save is no longer available. Start a fresh
+            investigation to reconnect; browser outcome badges remain when local
+            storage is available.
+          </p>
+          <button
+            className="primary-button"
+            onClick={() => void start()}
+            disabled={busy}
+          >
+            New investigation <RotateCcw size={16} />
+          </button>
+          {error && <p role="alert">{error}</p>}
+        </div>
+      </main>
+    );
   if (state.ending && state.finalScene)
     return (
       <main className="ending-screen">
@@ -424,6 +484,16 @@ export function Game() {
                 ))}
             </div>
           </div>
+          <p className="outcome-consequence">{state.finalScene.consequence}</p>
+          <p>
+            You made {state.queue.attempts.length} delivery attempts and
+            retained {state.records.length} record(s).{" "}
+            {state.handoverPrepared
+              ? "You compared source attribution and prepared the verified index."
+              : "You completed the incident without preparing a verified custody index."}{" "}
+            Your final choice was {state.ending}.
+          </p>
+          <OutcomeBadges completed={state.outcome!} />
           <div className="ending-actions">
             <a className="primary-button" href="/api/export" download>
               <Download size={16} />
@@ -508,7 +578,11 @@ export function Game() {
         <span className="tiny">AUTO-SAVED · V{state.version}</span>
       </div>
       {report && (
-        <ActionFeedback report={report} dismiss={() => setReport(null)} />
+        <ActionFeedback
+          report={report}
+          dismiss={() => setReport(null)}
+          act={(a) => void act(a)}
+        />
       )}
       <nav className="mobile-navigation" aria-label="Console views">
         {[
@@ -543,7 +617,7 @@ export function Game() {
           mode={mode}
           chatBusy={chatBusy}
           ask={(q) => void ask(q)}
-          act={(a) => void act(a)}
+          act={(a, version) => void act(a, version)}
           openEvidence={openEvidence}
           notebook={notebook}
           setNotebook={setNotebook}
@@ -552,6 +626,7 @@ export function Game() {
           notebookRevision={notebookRevision}
         />
       </div>
+      <ArchiveReview s={state} act={(a) => void act(a)} busy={busy} />
       {state.endingReady && (
         <div className="resolution-bar">
           <div>
@@ -692,6 +767,11 @@ export function Game() {
             <p>
               Both choices honor Elena’s request. This ends the episode; replay
               begins a new session.
+            </p>
+            <p>
+              {state.handoverPrepared
+                ? "Your verified index is prepared for export. That does not establish download or receipt by another custodian."
+                : "No verified handover index is prepared. Preservation will keep uncertain attribution sealed; shutdown will close without that handover. You can keep investigating first."}
             </p>
             <a className="subtle-button" href="/api/export" download>
               <Download size={15} />

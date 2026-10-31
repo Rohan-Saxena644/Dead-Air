@@ -20,6 +20,10 @@ const actions = [
   "advance",
   "preserve",
   "silence",
+  "verify-source",
+  "verify-delivery",
+  "prepare-handover",
+  "seal-attribution",
   ...evidenceIds.flatMap((id) => [`read:${id}`, `pin:${id}`]),
 ];
 const schema = z.object({
@@ -28,6 +32,7 @@ const schema = z.object({
     .refine((a) => actions.includes(a) || /^trace:TRC-\d{4}$/.test(a)),
   actionId: z.string().uuid(),
   version: z.number().int().nonnegative(),
+  suggestionVersion: z.number().int().nonnegative().optional(),
 });
 export async function POST(req: Request) {
   if (!sameOrigin(req))
@@ -40,6 +45,13 @@ export async function POST(req: Request) {
     );
   try {
     const body = schema.parse(await req.json());
+    if (
+      body.suggestionVersion !== undefined &&
+      body.suggestionVersion !== s.state.version
+    )
+      throw new Conflict(
+        "MORA's suggestion describes an earlier state. Ask again using the current evidence.",
+      );
     const next = submitAction(
       s.id,
       body.actionId,

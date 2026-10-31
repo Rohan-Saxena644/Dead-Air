@@ -23,7 +23,7 @@ export function Operator({
   mode: string;
   chatBusy: boolean;
   ask: (q: string) => void;
-  act: (a: Action) => void;
+  act: (a: Action, version?: number) => void;
   openEvidence: (id: EvidenceId) => void;
   notebook: boolean;
   setNotebook: (open: boolean) => void;
@@ -128,11 +128,14 @@ export function Operator({
                   </button>
                 ))}
                 {c.suggestedActionId &&
+                  c.stateVersion === s.version &&
                   s.legalActions.includes(c.suggestedActionId as Action) && (
                     <button
                       title={effects[c.suggestedActionId as Action]}
                       className="suggestion"
-                      onClick={() => act(c.suggestedActionId as Action)}
+                      onClick={() =>
+                        act(c.suggestedActionId as Action, c.stateVersion)
+                      }
                     >
                       <Sparkles size={13} />
                       {labels[c.suggestedActionId as Action] ??
@@ -140,6 +143,12 @@ export function Operator({
                       <ArrowUpRight size={13} />
                     </button>
                   )}
+                {c.suggestedActionId && c.stateVersion !== s.version && (
+                  <p className="tiny muted">
+                    Earlier-state suggestion retired. Ask MORA about the current
+                    evidence.
+                  </p>
+                )}
               </div>
             ))}
             {chatBusy && (
@@ -152,6 +161,10 @@ export function Operator({
             <div ref={end} />
           </div>
           <div className="operator-composer">
+            <p className="tiny muted">
+              Live MORA sends your question and discovered game context to
+              Google. Use fictional case details only.
+            </p>
             <button
               className="explain-button"
               disabled={chatBusy}

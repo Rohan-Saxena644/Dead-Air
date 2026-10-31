@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { session, sameOrigin } from "@/lib/server/session";
-import { askOperator } from "@/lib/ai/operator";
-import { reserveAi, saveConversation } from "@/lib/db/store";
+import { askOperator, scriptedReply } from "@/lib/ai/operator";
+import { releaseAi, reserveAi, saveConversation } from "@/lib/db/store";
 export const runtime = "nodejs";
 export async function POST(req: Request) {
   if (!sameOrigin(req))
@@ -24,19 +24,29 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  if (!reserveAi(s.id))
-    return NextResponse.json(
-      {
-        error:
-          "Operator request limit reached. Wait a moment, or continue using the runbook.",
-      },
-      { status: 429 },
-    );
-  const result = await askOperator(s.state, s.conversation, question);
+  const reserved = reserveAi(s.id);
+  const result = reserved
+    ? await (async () => {
+        try {
+          return await askOperator(s.state, s.conversation, question);
+        } finally {
+          releaseAi(s.id);
+        }
+      })()
+    : {
+        reply: scriptedReply(s.state, question, s.conversation),
+        mode: "Scripted fallback",
+        metadata: {
+          stateVersion: s.state.version,
+          fallbackReason: "Operator busy or usage limit reached.",
+          validation: "scripted",
+        },
+      };
   const assistant = {
     role: "assistant" as const,
     ...result.reply,
     mode: result.mode,
+    stateVersion: s.state.version,
   };
   saveConversation(
     s.id,
@@ -45,7 +55,8 @@ export async function POST(req: Request) {
     result.metadata,
   );
   return NextResponse.json({
-    ...result,
+    reply: result.reply,
+    mode: result.mode,
     assistant,
     retry: result.metadata.fallbackReason !== null,
   });

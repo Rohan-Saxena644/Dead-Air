@@ -4,9 +4,11 @@ import {
   legalActions,
   objective,
   services,
+  outcome,
+  handoverPrepared,
   type GameState,
 } from "../game/engine";
-import { evidence, endings } from "../scenarios/episode";
+import { evidence, endings, variations } from "../scenarios/episode";
 export function publicState(s: GameState) {
   return {
     ...s,
@@ -15,7 +17,11 @@ export function publicState(s: GameState) {
     objective: objective(s),
     legalActions: legalActions(s),
     endingReady: endingReady(s),
-    finalScene: s.ending ? endings[s.ending] : null,
+    handoverPrepared: handoverPrepared(s),
+    outcome: outcome(s),
+    finalScene: s.ending
+      ? { ...endings[s.ending], ...variations[outcome(s)!] }
+      : null,
   };
 }
 export type PublicState = ReturnType<typeof publicState>;
@@ -25,6 +31,8 @@ export interface Conversation {
   evidenceIds?: string[];
   suggestedActionId?: string | null;
   mode?: string;
+  stateVersion?: number;
+  hintLevel?: number;
 }
 export function knowledge(s: GameState, conversation: Conversation[]) {
   return {

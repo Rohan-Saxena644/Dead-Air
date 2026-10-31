@@ -197,18 +197,60 @@ export interface ActionReport {
   attemptsAdded: number;
   recordsAdded: number;
   pending: boolean;
+  ackHealthy: boolean;
+  traceId?: string;
+  evidenceIds: EvidenceId[];
 }
 export function actionReport(
   before: GameState,
   after: GameState,
   action: Action,
 ): ActionReport | null {
-  if (!["pause", "resume", "restart", "idempotency", "repair"].includes(action))
+  if (
+    ![
+      "pause",
+      "resume",
+      "restart",
+      "idempotency",
+      "repair",
+      "verify-source",
+      "verify-delivery",
+      "prepare-handover",
+      "seal-attribution",
+    ].includes(action)
+  )
     return null;
   const attemptsAdded =
     after.queue.attempts.length - before.queue.attempts.length;
   const recordsAdded = after.records.length - before.records.length;
-  const stats = { attemptsAdded, recordsAdded, pending: after.queue.pending };
+  const stats = {
+    attemptsAdded,
+    recordsAdded,
+    pending: after.queue.pending,
+    ackHealthy: after.ackHealthy,
+    traceId: after.queue.attempts.at(-1)?.id,
+    evidenceIds: after.discovered.filter(
+      (id) =>
+        !before.discovered.includes(id) || id === "runbook" || id === "custody",
+    ),
+  };
+  if (
+    [
+      "verify-source",
+      "verify-delivery",
+      "prepare-handover",
+      "seal-attribution",
+    ].includes(action)
+  )
+    return {
+      ...stats,
+      tone: action === "verify-delivery" ? "warning" : "success",
+      title:
+        action === "verify-delivery"
+          ? "That theory does not match the source"
+          : "Custody decision recorded",
+      detail: after.events.at(-1)!.text,
+    };
   if (action === "pause")
     return {
       ...stats,

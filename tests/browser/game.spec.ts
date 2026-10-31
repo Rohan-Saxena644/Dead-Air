@@ -54,7 +54,7 @@ test("preserve, reload persistence, keyboard terminal and export", async ({
     .click();
   await page.getByRole("button", { name: "Confirm preservation" }).click();
   await expect(
-    page.getByRole("heading", { name: "A place for what remains." }),
+    page.getByRole("heading", { name: "The box without a new label." }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Export investigation" }),
@@ -66,7 +66,7 @@ test("preserve, reload persistence, keyboard terminal and export", async ({
   await page.reload();
   await page.getByRole("button", { name: "Continue investigation" }).click();
   await expect(
-    page.getByRole("heading", { name: "A place for what remains." }),
+    page.getByRole("heading", { name: "The box without a new label." }),
   ).toBeVisible();
 });
 test("silence completes without a restart mistake", async ({ page }) => {
@@ -151,7 +151,7 @@ test("button recovery, pinned evidence, and keyboard dialogs", async ({
     .click();
   await page.getByRole("button", { name: "Pin to notebook" }).click();
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: /Evidence 9/ }).click();
+  await page.getByRole("button", { name: /Evidence 10/ }).click();
   await expect(page.locator(".notebook")).toContainText(
     "An inventory of ordinary things",
   );

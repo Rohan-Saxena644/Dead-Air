@@ -70,14 +70,16 @@ async function boundedJson(response: Response): Promise<unknown> {
 export function createGoogleProvider(config = operatorConfig()): Provider {
   const transport = nativeToolTransport();
   return {
-    async complete(messages) {
+    async complete(messages, options) {
       if (config.issue) throw new Error(config.issue);
       if (!config.apiKey) throw new Error("Google API key is missing.");
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent`,
         {
           method: "POST",
-          signal: AbortSignal.timeout(12_000),
+          signal: options
+            ? AbortSignal.any([options.signal, AbortSignal.timeout(12_000)])
+            : AbortSignal.timeout(12_000),
           headers: {
             "Content-Type": "application/json",
             "x-goog-api-key": config.apiKey,

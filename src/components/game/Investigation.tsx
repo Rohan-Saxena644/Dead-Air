@@ -13,6 +13,7 @@ import {
 import type { PublicState } from "@/lib/server/projection";
 import {
   MESSAGE_ID,
+  evidenceIds,
   timeLabel,
   type Action,
   type EvidenceId,
@@ -337,7 +338,9 @@ export function Investigation({
                 <h2>What they left behind</h2>
                 <p>Read the records. Let the machine change its mind.</p>
               </div>
-              <span className="tag">{s.evidence.length} / 9 FILES</span>
+              <span className="tag">
+                {s.evidence.length} / {evidenceIds.length} FILES
+              </span>
             </div>
             <div className="archive-summary">
               <Archive size={30} />

@@ -1,5 +1,5 @@
 import "server-only";
-import type { Ending, EvidenceId } from "../game/engine";
+import type { Ending, EvidenceId, OutcomeId } from "../game/engine";
 export interface Evidence {
   id: EvidenceId;
   title: string;
@@ -64,6 +64,13 @@ export const evidence: Record<EvidenceId, Evidence> = {
     date: "2019-10-31 · 18:42 UTC",
     body: "TO MORA / unresolved obligation PR-0917\n\nKeep the archive intact until someone can take over. Please don’t interpret the recordings as instructions. My mother asked me not to switch off the tape before she finished her story. That is all you are hearing.\n\nWhen the transfer is safe, the next operator may keep a read-only copy or close the archive. I cannot decide for whoever has to carry this next. Neither choice brings anyone back.\n\nI only ask that someone listen before they choose.\n\nElena Ward\n\nHandover condition: stable delivery, acknowledged queue, archive integrity retained.",
   },
+  custody: {
+    id: "custody",
+    title: "Whose name belongs on the box?",
+    kind: "Custody comparison / optional",
+    date: "2019-10-31 · attached to MH-214",
+    body: "ORIGINAL REGISTER: EW-014 / speaker Ada Ward / depositor Elena Ward / recorded 2017-11-12. Manifest integrity check passes for the original recordings.\n\nUNSIGNED REPLACEMENT LABEL: EW-014 / speaker Elena Ward / source MSG-0917 / copied from the delivery account. No contributor approval attached.\n\nA delivery envelope identifies a transfer, not the voice it carries. Repeated DLV records are receipts of attempts, not extra or corrupted recordings. Compare the manifest before endorsing any replacement credit.\n\nYou may retain the original attribution, quarantine the unsigned label, and prepare a verified handover index. Alternatively keep unresolved attribution sealed. Neither path deletes the source or prevents further investigation. Preparing the index makes it part of the investigation export, not a delivered audio archive or proof of receipt by another person.",
+  },
   recording: {
     id: "recording",
     title: "Kitchen, rain / segment 03",
@@ -89,5 +96,42 @@ export const endings: Record<
     scene:
       "You complete the shutdown Elena could not finish. The final receipt is filed. One by one, the service lights go dark. A buffered confirmation arrives from LISTENER after its light has already gone out: “Recording received. Thank you for waiting.”\n\nThe memories were heard. They were never asking you to keep the room lit forever. Outside this console, morning is beginning.",
     mora: "The request is complete. There is no one trapped here. There never was. Thank you for staying long enough to find out. I have no outstanding obligations.",
+  },
+};
+export const variations: Record<
+  OutcomeId,
+  { title: string; scene: string; mora: string; consequence: string }
+> = {
+  preserve_verified: {
+    title: "A place for what remains.",
+    scene:
+      "The original credits sit beside each recording. The unsigned label goes into quarantine, where uncertainty belongs. You seal an organized, read-only archive. Somewhere in the inventory, a kettle will always be about to click off.",
+    mora: "You kept the voice and the name together. The index is prepared for whoever comes next. I cannot tell you that they will come.",
+    consequence:
+      "Preserve chosen. Original source attribution verified and handover index prepared; unsigned replacement quarantined. VAULT read-only, other services stopped. No download or outside receipt is asserted.",
+  },
+  preserve_sealed: {
+    title: "The box without a new label.",
+    scene:
+      "You leave the uncertain catalog change sealed beside the original register. The recordings remain intact, but the next custodian will inherit the question you left open. The room is quiet without being empty.",
+    mora: "Keeping something safe can mean refusing to give it a name you cannot support. The originals remain. A verified handover index has not been prepared.",
+    consequence:
+      "Preserve chosen without a prepared verified index. Unresolved replacement attribution stays sealed; source recordings and evidence retained. VAULT read-only, other services stopped.",
+  },
+  silence_handover: {
+    title: "An address for the morning.",
+    scene:
+      "Before the lights go out, you file the verified index with the investigation. Ada keeps her voice; Elena keeps her place as the person who saved it. The machine rests with a handover ready, though no one has signed for it.",
+    mora: "Prepared is not received. That distinction once kept me waiting for seven years. This time I can record what we actually know, and stop.",
+    consequence:
+      "Shutdown chosen after preparing a verified index. All simulated services offline. Investigation export retains the index and discovered transcripts, not downloadable audio or proof of another custodian receiving them.",
+  },
+  silence_unprepared: {
+    title: "Nothing left waiting.",
+    scene:
+      "You complete the shutdown Elena could not finish. The final receipt is filed and the service lights go dark. The memories were heard, but no verified handover index was prepared before you closed the room.",
+    mora: "There is no one trapped here. Thank you for staying long enough to find out. The investigation remains exportable; a preservation handover remains unfinished.",
+    consequence:
+      "Shutdown chosen without preparing a verified index. All simulated services offline. Investigation and discovered evidence remain exportable; no external preservation or receipt is claimed.",
   },
 };

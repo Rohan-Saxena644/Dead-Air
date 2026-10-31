@@ -8,6 +8,7 @@ export const evidenceIds = [
   "manifest",
   "request",
   "recording",
+  "custody",
 ] as const;
 export type EvidenceId = (typeof evidenceIds)[number];
 export type ServiceName = "LISTENER" | "RELAY" | "VAULT";
@@ -27,6 +28,10 @@ export type Action =
   | "advance"
   | "preserve"
   | "silence"
+  | "verify-source"
+  | "verify-delivery"
+  | "prepare-handover"
+  | "seal-attribution"
   | `trace:${string}`
   | `read:${EvidenceId}`
   | `pin:${EvidenceId}`;
@@ -201,6 +206,27 @@ export function endingReady(s: GameState) {
     (s.actions["read:request"] ?? 0) > 0
   );
 }
+export const outcomeIds = [
+  "preserve_verified",
+  "preserve_sealed",
+  "silence_handover",
+  "silence_unprepared",
+] as const;
+export type OutcomeId = (typeof outcomeIds)[number];
+export function handoverPrepared(s: GameState) {
+  return s.milestones.includes("handover-prepared");
+}
+export function outcome(s: GameState): OutcomeId | null {
+  return s.ending === "preserve"
+    ? handoverPrepared(s)
+      ? "preserve_verified"
+      : "preserve_sealed"
+    : s.ending === "silence"
+      ? handoverPrepared(s)
+        ? "silence_handover"
+        : "silence_unprepared"
+      : null;
+}
 export function services(s: GameState): ServiceState[] {
   return [
     { name: "LISTENER", status: s.ending ? "offline" : "online" },
@@ -236,6 +262,14 @@ export function legalActions(s: GameState): Action[] {
     "advance",
     ...s.discovered.map((id) => `read:${id}` as Action),
     ...(endingReady(s) ? (["preserve", "silence"] as const) : []),
+    ...(endingReady(s) && (s.actions["read:custody"] ?? 0) > 0
+      ? (["verify-source", "verify-delivery", "seal-attribution"] as const)
+      : []),
+    ...(endingReady(s) &&
+    s.milestones.includes("source-compared") &&
+    !handoverPrepared(s)
+      ? (["prepare-handover"] as const)
+      : []),
   ];
 }
 export function objective(s: GameState) {
@@ -246,7 +280,7 @@ export function objective(s: GameState) {
   if (!s.discovered.includes("ack"))
     return "Follow a delivery trace. Did the message fail, or only its acknowledgement?";
   if (!s.idempotency || !s.ackHealthy)
-    return "Contain retries, enable idempotency, and repair the acknowledgement route. The old runbook can help.";
+    return "Compare the committed write with its missing receipt. Find a safe recovery in the recovered runbook.";
   if (s.queue.pending)
     return "Resume delivery to verify one safe, acknowledged attempt.";
   if (!endingReady(s))
@@ -374,6 +408,42 @@ export function transition(
           "Archive index recovered: 214 recordings. Employee correspondence and manifest available.",
         );
         break;
+      case "verify-delivery":
+        emit(
+          s,
+          "VAULT",
+          "warn",
+          "Attribution not verified: MSG-0917 is a delivery envelope, not a contributor. Compare EW-014 in the original manifest with the custody note. Duplicate deliveries do not mean damaged audio.",
+        );
+        break;
+      case "verify-source":
+        if (!s.milestones.includes("source-compared"))
+          s.milestones.push("source-compared");
+        emit(
+          s,
+          "VAULT",
+          "info",
+          "Source comparison passed: EW-014 credits Ada Ward as speaker and Elena as depositor. The unsigned replacement label is quarantined. Choose whether to prepare this verified index for handover.",
+        );
+        break;
+      case "prepare-handover":
+        s.milestones.push("handover-prepared");
+        emit(
+          s,
+          "SYSTEM",
+          "info",
+          "Verified handover index prepared: original credits retained, unsigned label quarantined, integrity report attached. This prepares metadata for session export; it does not prove download, delivery, or acceptance by another custodian.",
+        );
+        break;
+      case "seal-attribution":
+        s.milestones = s.milestones.filter((m) => m !== "handover-prepared");
+        emit(
+          s,
+          "SYSTEM",
+          "info",
+          "Attribution held sealed. Original recordings and all evidence retained; no verified handover index is prepared. You can revisit this decision before the final choice.",
+        );
+        break;
       case "preserve":
       case "silence":
         if (!endingReady(s))
@@ -392,7 +462,7 @@ export function transition(
           "SYSTEM",
           "info",
           action === "preserve"
-            ? "VAULT sealed read-only. Archive handover complete. LISTENER and RELAY stopped."
+            ? "VAULT sealed read-only. Custodianship recorded. LISTENER and RELAY stopped."
             : "Final shutdown complete. All simulated services offline. Session export remains available.",
         );
         break;
@@ -401,7 +471,7 @@ export function transition(
         if (action.startsWith("read:")) {
           const id = action.slice(5) as EvidenceId;
           if (id === "manifest") {
-            discover(s, "request", "recording");
+            discover(s, "request", "recording", "custody");
             if (!s.milestones.includes("truth")) {
               s.milestones.push("truth");
               emit(

@@ -33,6 +33,17 @@ export function database() {
       db!.prepare("INSERT INTO migrations VALUES (1)").run();
     })();
   }
+  if (!db.prepare("SELECT version FROM migrations WHERE version=2").get()) {
+    db.transaction(() => {
+      db!.exec(
+        readFileSync(
+          join(process.cwd(), "src/lib/db/migrations/002_ai_limits.sql"),
+          "utf8",
+        ),
+      );
+      db!.prepare("INSERT INTO migrations VALUES (2)").run();
+    })();
+  }
   return db;
 }
 interface Row {
@@ -99,7 +110,30 @@ export function reserveAi(id: string) {
   return database().transaction(() => {
     const s = getSession(id);
     if (!s) throw new Error("Session not found.");
-    if (s.aiRequests >= 100 || Date.now() - s.lastAiAt < 1200) return false;
+    const now = Date.now();
+    database().prepare("DELETE FROM ai_leases WHERE expires_at<=?").run(now);
+    if (
+      database().prepare("SELECT 1 FROM ai_leases WHERE session_id=?").get(id)
+    )
+      return false;
+    if (s.aiRequests >= 100 || now - s.lastAiAt < 1200) return false;
+    const active = database()
+      .prepare("SELECT count(*) AS n FROM ai_leases")
+      .get() as { n: number };
+    if (active.n >= 2) return false;
+    const budget = database()
+      .prepare("SELECT * FROM ai_budget WHERE id=1")
+      .get() as { window_start: number; turns: number };
+    if (now - budget.window_start >= 3_600_000)
+      database()
+        .prepare("UPDATE ai_budget SET window_start=?,turns=0 WHERE id=1")
+        .run(now);
+    else if (budget.turns >= 120) return false;
+    database().prepare("UPDATE ai_budget SET turns=turns+1 WHERE id=1").run();
+    // The entire model turn is bounded to 30s. Expiry recovers leases after a crash.
+    database()
+      .prepare("INSERT INTO ai_leases VALUES (?,?)")
+      .run(id, now + 45_000);
     database()
       .prepare(
         "UPDATE sessions SET ai_requests=ai_requests+1,last_ai_at=? WHERE id=?",
@@ -107,6 +141,9 @@ export function reserveAi(id: string) {
       .run(Date.now(), id);
     return true;
   })();
+}
+export function releaseAi(id: string) {
+  database().prepare("DELETE FROM ai_leases WHERE session_id=?").run(id);
 }
 export function saveConversation(
   id: string,
